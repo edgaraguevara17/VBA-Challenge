@@ -1,0 +1,135 @@
+Sub VBA_Challenge():
+
+'repeat sub in every sheet
+    For Each ws In Worksheets
+   
+   'define all variables
+    
+        Dim WorksheetName As String
+        Dim i As Long
+        Dim x As Long
+        Dim TickerCount As Long
+        Dim LastRowA As Long
+        Dim LastRowI As Long
+        Dim PercentChange As Double
+        Dim GreatestIncrease As Double
+        Dim GreatestDecrease As Double
+        Dim GreatestVolume As Double
+        
+'add headers for results
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1") = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        ws.Range("o1").Value = "Ticker"
+        ws.Range("P1").Value = "Value"
+        ws.Range("N2").Value = "Greatest % Increase"
+        ws.Range("N3").Value = "Greatest % Decrease"
+        ws.Range("N4").Value = "Greatest Total Volume"
+        
+  'start on row 2
+  'tickercount keeps track of which ticker is being ran through the loop
+  
+  TickerCount = 2
+    
+    x = 2
+        
+        'find last cell in A
+        LastRowA = ws.Cells(Rows.Count, 1).End(xlUp).Row
+            For i = 2 To LastRowA
+                'if the ticker name changes, copy previous ticker name to column I
+                If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                ws.Cells(TickerCount, 9).Value = ws.Cells(i, 1).Value
+
+                'subtract last "close" value from initial "open" value and copy to column J
+                ws.Cells(TickerCount, 10).Value = ws.Cells(i, 6).Value - ws.Cells(x, 3).Value
+                
+                    'Format colors
+                    If ws.Cells(TickerCount, 10).Value < 0 Then
+                    ws.Cells(TickerCount, 10).Interior.ColorIndex = 3
+                
+                    Else
+                    ws.Cells(TickerCount, 10).Interior.ColorIndex = 4
+                
+                    End If
+                    
+                    'find percentage change, format value as %
+                    If ws.Cells(x, 3).Value <> 0 Then
+                    PercentChange = ((ws.Cells(i, 6).Value - ws.Cells(x, 3).Value) / ws.Cells(x, 3).Value)
+                    
+                    'Percent formating
+                    ws.Cells(TickerCount, 11).Value = Format(PercentChange, "Percent")
+                    
+                    Else
+                    
+                    ws.Cells(TickerCount, 11).Value = Format(0, "Percent")
+                    
+                    End If
+                    
+                'sum total volume for ticker
+                ws.Cells(TickerCount, 12).Value = WorksheetFunction.Sum(Range(ws.Cells(x, 7), ws.Cells(x, 7)))
+                
+                'next ticker count
+                TickerCount = TickerCount + 1
+                
+                'Set new start row of the ticker block
+                x = i + 1
+                
+                End If
+            
+            Next i
+            
+    'last row in column I (total number of unique tickers
+        LastRowI = ws.Cells(Rows.Count, 9).End(xlUp).Row
+        
+            For i = 2 To LastRowI
+            
+            'if value exceeds the previous greatest total volume as the loop runs through the rows, it becomes the newest greatest value
+            
+                If ws.Cells(i, 12).Value > GreatestVolume Then
+                GreatestVolume = ws.Cells(i, 12).Value
+                ws.Cells(4, 15).Value = ws.Cells(i, 9).Value
+                
+                Else
+                
+                GreatestVolume = GreatestVolume
+                
+                End If
+            
+            'if a value exceeds the previous greatest increase, it becomes the newest greatest increase- pull that ticker value to the result
+            
+                If ws.Cells(i, 11).Value > GreatestIncrease Then
+                GreatestIncrease = ws.Cells(i, 11).Value
+                ws.Cells(2, 15).Value = ws.Cells(i, 9).Value
+                
+                Else
+                
+                GreatestIncrease = GreatestIncrease
+                
+                End If
+                
+                If ws.Cells(i, 11).Value < GreatestDecrease Then
+                GreatestDecrease = ws.Cells(i, 11).Value
+                ws.Cells(3, 15).Value = ws.Cells(i, 9).Value
+                
+                Else
+                
+                GreatestDecrease = GreatestDecrease
+                
+                End If
+                
+            'format cells as percent or scientific number
+            
+            ws.Cells(2, 16).Value = Format(GreatestIncrease, "Percent")
+            ws.Cells(3, 16).Value = Format(GreatestDecrease, "Percent")
+            ws.Cells(4, 16).Value = Format(GreatestVolume, "Scientific")
+            
+            'continue to next row
+            
+            Next i
+            
+            'repeat for next worksheet
+            
+    Next ws
+        
+End Sub
